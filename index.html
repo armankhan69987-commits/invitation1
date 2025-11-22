@@ -1,0 +1,346 @@
+ <!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AZAN GARMENTS — WhatsApp Ordering</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --card:#fff; --accent:#ff6b6b; --muted:#6b7280;
+    --glass: rgba(255,255,255,0.7);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  body{ margin:0; background:linear-gradient(180deg,#fafafa 0%, #f0f4f8 100%); color:#111; }
+  header{ display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--card); box-shadow:0 1px 8px rgba(15,15,20,0.04); position:sticky; top:0; z-index:10;}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#ffb86b);display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+  .title{font-weight:700;font-size:16px}
+  button{cursor:pointer}
+  .container{max-width:1100px;margin:20px auto;padding:0 16px;}
+  .hero{display:flex;gap:20px;align-items:center;flex-wrap:wrap;padding:22px;background:linear-gradient(90deg,#fff,#f7fbff);border-radius:12px;box-shadow:0 6px 20px rgba(20,30,50,0.04)}
+  .hero-left{flex:1;min-width:240px}
+  .hero-right{width:260px}
+  h1{margin:0;font-size:22px}
+  p.lead{margin:8px 0;color:var(--muted)}
+  .btn{background:var(--accent);border:none;color:white;padding:10px 14px;border-radius:10px;font-weight:600}
+  .btn.secondary{background:transparent;color:var(--accent);border:1px solid rgba(255,107,107,0.12)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:18px}
+  .card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(20,30,50,0.04);display:flex;flex-direction:column;gap:8px}
+  .media{height:220px;border-radius:8px;overflow:hidden;background:#eee;display:flex;align-items:center;justify-content:center}
+  .media img, .media video{width:100%;height:100%;object-fit:cover;display:block}
+  .meta{display:flex;justify-content:space-between;align-items:center}
+  .price{font-weight:700;color:#0f172a}
+  .muted{color:var(--muted);font-size:13px}
+  footer{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+
+  /* Admin modal / panel */
+  .admin-toggle{display:flex;gap:8px;align-items:center}
+  .admin-panel{position:fixed;right:18px;top:74px;width:360px;max-width:94vw;background:var(--card);border-radius:12px;padding:14px;box-shadow:0 12px 40px rgba(15,20,30,0.08);z-index:40;display:none}
+  .admin-panel.show{display:block}
+  .form-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .form-row input[type="text"], .form-row input[type="number"], .form-row input[type="file"]{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9ef}
+  label{font-size:13px;color:var(--muted);margin-bottom:6px;display:block}
+  .small{font-size:13px;color:var(--muted)}
+  .admin-list{max-height:320px;overflow:auto;margin-top:8px;display:flex;flex-direction:column;gap:10px}
+  .admin-item{display:flex;gap:8px;align-items:center}
+  .admin-thumb{width:56px;height:56px;border-radius:8px;overflow:hidden}
+  .icon-btn{background:transparent;border:1px solid #eee;padding:8px;border-radius:8px;cursor:pointer}
+  .center{display:flex;align-items:center;justify-content:center}
+  /* responsive */
+  @media (max-width:720px){ .hero{flex-direction:column} .hero-right{width:100%} .media{height:180px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">C</div>
+    <div>
+      <div class="title">AZAN GARMENTS</div>
+      <div class="muted" style="font-size:12px">WhatsApp ordering — fast & simple</div>
+    </div>
+  </div>
+
+  <div class="admin-toggle">
+    <button id="openAdminBtn" class="btn secondary">Admin</button>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <div class="hero-left">
+      <h1>Stylish collection — directly order on WhatsApp</h1>
+      <p class="lead">Browse the catalogue, dekho photos/videos, aur jo pasand aaye “Order on WhatsApp” se seedha message bhejo. No backend required.</p>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" id="scrollCatalog">Shop Now</button>
+        <button class="btn secondary" id="openAdminBtn2">Open Admin</button>
+      </div>
+    </div>
+    <div class="hero-right center">
+      <div style="text-align:center">
+        <div style="background:linear-gradient(135deg,#fff,#fff);padding:12px;border-radius:12px;box-shadow:0 6px 20px rgba(15,20,30,0.04)">
+          <div style="font-weight:700;font-size:18px">Simple Workflow</div>
+          <div class="muted" style="margin-top:8px">Admin → Add product → Front shows → Customer orders on WhatsApp</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="catalogSection">
+    <h2 style="margin-top:22px">Products</h2>
+    <div id="productsGrid" class="grid" aria-live="polite">
+      <!-- products injected here -->
+    </div>
+    <div id="emptyNote" class="muted" style="margin-top:12px">Abhi products nahi hain. Admin se add karein.</div>
+  </section>
+</main>
+
+<!-- Admin Panel -->
+<div id="adminPanel" class="admin-panel" aria-hidden="true">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div style="font-weight:700">Admin Panel</div>
+    <div style="font-size:13px;color:var(--muted)">
+      <button id="logoutBtn" class="icon-btn" title="Logout">Logout</button>
+      <button id="closeAdminBtn" class="icon-btn" title="Close">✕</button>
+    </div>
+  </div>
+
+  <div id="adminLogin" style="display:none">
+    <label>Password</label>
+    <div class="form-row">
+      <input id="adminPasswordInput" type="password" placeholder="Enter admin password" />
+      <button id="adminLoginBtn" class="btn">Login</button>
+    </div>
+    <div class="small">Admin ke bina changes nahi kiye ja sakte.</div>
+  </div>
+
+  <div id="adminUI" style="display:none">
+    <label>Add / Edit Product</label>
+    <div class="form-row">
+      <input id="pname" type="text" placeholder="Product name (e.g., Kurti Blue)" />
+    </div>
+    <div class="form-row">
+      <input id="pprice" type="number" placeholder="Price (e.g., 450)" />
+    </div>
+    <div class="form-row">
+      <input id="pmedia" type="file" accept="image/*,video/*" />
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button id="addProductBtn" class="btn">Add Product</button>
+      <button id="clearAllBtn" class="btn secondary">Clear All</button>
+    </div>
+
+    <div style="margin-top:6px;font-size:13px;color:var(--muted)">Tip: Images/videos localStorage me base64 save hote hain. Agar bahut zyada large video add karoge to file size badh sakta hai.</div>
+
+    <div style="margin-top:12px">
+      <label>Existing Products</label>
+      <div id="adminList" class="admin-list"></div>
+    </div>
+  </div>
+
+  <div style="margin-top:8px;font-size:12px;color:var(--muted)">Pro tip: Agar kisi product ka media galat aagaya ho to admin se delete karke dobara add karlo.</div>
+</div>
+
+<footer>
+  <div>Built for your shop • Change WhatsApp number inside the file to connect orders</div>
+</footer>
+
+<script>
+/* ====== CONFIG ====== */
+/* Change this to your WhatsApp number (with country code) */
+const WHATSAPP_NUMBER = "917062545084"; // example: "919876543210" or "+919876543210"
+
+/* Admin password (you gave this earlier) */
+const ADMIN_PASSWORD = "alshu2006";
+
+/* localStorage key */
+const STORAGE_KEY = "catalog_products_v1";
+
+/* ====== App logic ====== */
+const openAdminBtn = document.getElementById('openAdminBtn');
+const openAdminBtn2 = document.getElementById('openAdminBtn2');
+const adminPanel = document.getElementById('adminPanel');
+const closeAdminBtn = document.getElementById('closeAdminBtn');
+const adminLogin = document.getElementById('adminLogin');
+const adminUI = document.getElementById('adminUI');
+const adminLoginBtn = document.getElementById('adminLoginBtn');
+const adminPasswordInput = document.getElementById('adminPasswordInput');
+const addProductBtn = document.getElementById('addProductBtn');
+const clearAllBtn = document.getElementById('clearAllBtn');
+const adminList = document.getElementById('adminList');
+const productsGrid = document.getElementById('productsGrid');
+const emptyNote = document.getElementById('emptyNote');
+const logoutBtn = document.getElementById('logoutBtn');
+const scrollCatalog = document.getElementById('scrollCatalog');
+const pname = document.getElementById('pname');
+const pprice = document.getElementById('pprice');
+const pmedia = document.getElementById('pmedia');
+
+let products = [];
+let editId = null;
+
+/* Helpers */
+function qs(sel){ return document.querySelector(sel) }
+function saveProducts(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(products)) }
+function loadProducts(){ try{ products = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [] }catch(e){ products=[] } }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7) }
+function formatPrice(p){ return "₹" + Number(p).toLocaleString('en-IN') }
+
+/* WhatsApp message encode */
+function buildWhatsAppMessage(product){
+  const name = product.name;
+  const price = product.price;
+  return encodeURIComponent(`Hi, I want to order *${name}* (Price: ₹${price}). Please confirm availability and payment method. \nProduct ID: ${product.id}`);
+}
+
+/* UI render */
+function renderProducts(){
+  productsGrid.innerHTML = "";
+  if(products.length === 0){
+    emptyNote.style.display = "block";
+    return;
+  } else emptyNote.style.display = "none";
+
+  products.slice().reverse().forEach(product => {
+    const div = document.createElement('div');
+    div.className = "card";
+    // media
+    const mediaWrap = document.createElement('div');
+    mediaWrap.className = "media";
+    if(product.mediaType && product.mediaType.startsWith('video')){
+      const v = document.createElement('video'); v.controls = false; v.muted = true; v.loop = true; v.src = product.mediaData; v.setAttribute('playsinline',''); v.autoplay = true;
+      mediaWrap.appendChild(v);
+    } else {
+      const img = document.createElement('img'); img.alt = product.name; img.src = product.mediaData || '';
+      mediaWrap.appendChild(img);
+    }
+    div.appendChild(mediaWrap);
+
+    // meta
+    const title = document.createElement('div'); title.style.display='flex'; title.style.justifyContent='space-between'; title.style.alignItems='center';
+    const h3 = document.createElement('div'); h3.textContent = product.name; h3.style.fontWeight='600';
+    const price = document.createElement('div'); price.className='price'; price.textContent = formatPrice(product.price);
+    title.appendChild(h3); title.appendChild(price);
+    div.appendChild(title);
+
+    const desc = document.createElement('div'); desc.className='muted'; desc.textContent = product.desc || "";
+    div.appendChild(desc);
+
+    const actions = document.createElement('div'); actions.style.display='flex'; actions.style.gap='8px'; actions.style.marginTop='6px';
+    const wa = document.createElement('a'); wa.className='btn'; wa.textContent='Order on WhatsApp';
+    wa.href = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g,'')}?text=${buildWhatsAppMessage(product)}`;
+    wa.target = "_blank";
+    actions.appendChild(wa);
+
+    div.appendChild(actions);
+    productsGrid.appendChild(div);
+  });
+}
+
+/* Admin list render */
+function renderAdminList(){
+  adminList.innerHTML = "";
+  if(!products.length){ adminList.innerHTML = '<div class="small muted">No products yet.</div>'; return; }
+  products.slice().reverse().forEach(prod=>{
+    const row = document.createElement('div'); row.className='admin-item';
+    const t = document.createElement('div'); t.className='admin-thumb';
+    if(prod.mediaType && prod.mediaType.startsWith('video')){ const v=document.createElement('video'); v.src=prod.mediaData; v.style.width='100%'; v.style.height='100%'; v.muted=true; v.loop=true; v.play(); t.appendChild(v) }
+    else { const i=document.createElement('img'); i.src=prod.mediaData; i.style.width='100%'; i.style.height='100%'; i.style.objectFit='cover'; t.appendChild(i) }
+    const info = document.createElement('div'); info.style.flex='1';
+    const n = document.createElement('div'); n.textContent=prod.name; n.style.fontWeight='600';
+    const p = document.createElement('div'); p.className='muted'; p.textContent = formatPrice(prod.price);
+    info.appendChild(n); info.appendChild(p);
+
+    const ctrls = document.createElement('div'); ctrls.style.display='flex'; ctrls.style.gap='8px';
+    const edit = document.createElement('button'); edit.className='icon-btn'; edit.textContent='Edit'; edit.onclick = ()=> openEdit(prod.id);
+    const del = document.createElement('button'); del.className='icon-btn'; del.textContent='Delete'; del.onclick = ()=> removeProduct(prod.id);
+    ctrls.appendChild(edit); ctrls.appendChild(del);
+
+    row.appendChild(t); row.appendChild(info); row.appendChild(ctrls);
+    adminList.appendChild(row);
+  });
+}
+
+/* Add product */
+addProductBtn.addEventListener('click', ()=>{
+  const name = pname.value.trim();
+  const price = pprice.value.trim();
+  const file = pmedia.files[0];
+
+  if(!name || !price || !file){ alert("Please provide name, price and select a media file."); return; }
+  if(Number(price) <= 0){ alert("Enter a valid price."); return; }
+
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const data = e.target.result;
+    const mediaType = file.type || '';
+    if(editId){
+      const idx = products.findIndex(x=>x.id===editId);
+      if(idx>=0){
+        products[idx].name = name; products[idx].price = price; products[idx].mediaData = data; products[idx].mediaType = mediaType;
+        editId = null; addProductBtn.textContent = "Add Product";
+      }
+    } else {
+      products.push({ id: uid(), name, price, mediaData: data, mediaType, desc:"" });
+    }
+    saveProducts(); renderProducts(); renderAdminList(); resetForm();
+    adminPanel.classList.remove('show');
+  };
+  reader.readAsDataURL(file);
+});
+
+function resetForm(){
+  pname.value=''; pprice.value=''; pmedia.value='';
+}
+
+/* Edit */
+function openEdit(id){
+  const prod = products.find(p=>p.id===id); if(!prod) return;
+  editId = id;
+  pname.value = prod.name; pprice.value = prod.price;
+  addProductBtn.textContent = "Save Changes";
+  // keep previous media unless user chooses new file
+}
+
+/* Remove */
+function removeProduct(id){
+  if(!confirm("Delete this product?")) return;
+  products = products.filter(p=>p.id !== id);
+  saveProducts(); renderProducts(); renderAdminList();
+}
+
+/* Clear all */
+clearAllBtn.addEventListener('click', ()=>{
+  if(!confirm("Clear ALL products? This cannot be undone.")) return;
+  products = []; saveProducts(); renderProducts(); renderAdminList();
+});
+
+/* Admin login/logout */
+function showAdminPanel(){
+  adminPanel.classList.add('show');
+  const logged = sessionStorage.getItem('catalog_admin_logged');
+  if(logged === '1'){ adminLogin.style.display='none'; adminUI.style.display='block'; renderAdminList(); }
+  else { adminLogin.style.display='block'; adminUI.style.display='none'; }
+}
+function hideAdminPanel(){ adminPanel.classList.remove('show'); }
+
+openAdminBtn.addEventListener('click', showAdminPanel);
+openAdminBtn2.addEventListener('click', showAdminPanel);
+closeAdminBtn.addEventListener('click', hideAdminPanel);
+scrollCatalog.addEventListener('click', ()=> document.getElementById('catalogSection').scrollIntoView({behavior:'smooth'}));
+
+adminLoginBtn.addEventListener('click', ()=>{
+  const v = adminPasswordInput.value;
+  if(v === ADMIN_PASSWORD){ sessionStorage.setItem('catalog_admin_logged','1'); adminPasswordInput.value=''; showAdminPanel(); adminLogin.style.display='none'; adminUI.style.display='block'; renderAdminList(); }
+  else { alert("Wrong password"); }
+});
+
+logoutBtn.addEventListener('click', ()=>{
+  sessionStorage.removeItem('catalog_admin_logged'); adminLogin.style.display='block'; adminUI.style.display='none';
+});
+
+/* Init */
+loadProducts(); renderProducts(); renderAdminList();
+</script>
+</body>
+</html>
