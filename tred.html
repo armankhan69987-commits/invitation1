@@ -1,0 +1,323 @@
+full update code dede ye reha index file <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Game (Player View)</title>
+    <style>
+        /* --- Professional Light Pro UI Styles --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f6fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 30px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2f3640;
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        #market-status-msg {
+            text-align: center;
+            color: #718093;
+            font-size: 0.95em;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .price-display {
+            font-size: 3em;
+            text-align: center;
+            margin: 25px 0;
+            font-weight: bold;
+            color: #40739e;
+            background: #f1f2f6;
+            padding: 15px 0;
+            border-radius: 10px;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.05);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .controls input {
+            padding: 12px;
+            font-size: 1em;
+            width: 120px;
+            border: 1px solid #dcdde1;
+            border-radius: 8px;
+            text-align: center;
+            transition: border 0.3s;
+        }
+
+        .controls input:focus {
+            border: 1px solid #40739e;
+            outline: none;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.1s, background 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        #buy-btn {
+            background-color: #44bd32;
+        }
+
+        #buy-btn:hover {
+            background-color: #4cd137;
+        }
+
+        #sell-btn {
+            background-color: #e84118;
+        }
+
+        #sell-btn:hover {
+            background-color: #ff4d4d;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #2f3640;
+            font-size: 1.5em;
+        }
+
+        .stats {
+            margin-top: 15px;
+            border: 1px solid #dcdde1;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #f1f2f6;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.05);
+        }
+
+        .stats div {
+            padding: 10px 0;
+            border-bottom: 1px dotted #dcdde1;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stats div:last-child {
+            border-bottom: none;
+        }
+
+        .positive {
+            color: #44bd32;
+            font-weight: bold;
+        }
+
+        .negative {
+            color: #e84118;
+            font-weight: bold;
+        }
+
+        .neutral {
+            color: #2f3640;
+        }
+
+        #message {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #dcdde1;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            color: #2f3640;
+        }
+
+        @media (max-width: 500px) {
+            .controls {
+                flex-direction: column;
+            }
+            .controls input, button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🚀 Stock: "TREADING"</h1>
+        <span id="market-status-msg">join our telegram </span>
+        
+        <div class="price-display">
+            Price: ₹<span id="current-price">10.00</span>
+        </div>
+        
+        <div class="controls">
+            <input type="number" id="quantity-input" placeholder="Quantity" value="1" min="1">
+            <button id="buy-btn">✅ Buy</button>
+            <button id="sell-btn">❌ Sell</button>
+        </div>
+        
+        <h2>📊 Your Portfolio</h2>
+        <div class="stats">
+            <div><span>Balance:</span> ₹<span id="balance" class="neutral">100.00</span></div>
+            <div><span>Shares Held:</span> <span id="shares-held">0</span></div>
+            <div><span>Avg. Buy Price:</span> ₹<span id="avg-price">0.00</span></div>
+            <div><span>Current P/L (Profit/Loss):</span> <span id="p-l">₹0.00</span></div>
+        </div>
+
+        <p id="message"></p>
+    </div>
+
+    <script>
+        // Your existing JS code goes here (no changes needed)
+        let currentPrice = 10.00;
+        let balance = 100.00;
+        let sharesHeld = 0;
+        let avgBuyPrice = 0.00;
+
+        const PRICE_KEY = 'techCoinPrice';
+        const SCHEDULE_KEY = 'priceSchedule';
+        const MARKET_LOCK_KEY = 'marketLock';
+
+        const priceDisplay = document.getElementById('current-price');
+        const balanceDisplay = document.getElementById('balance');
+        const sharesDisplay = document.getElementById('shares-held');
+        const avgPriceDisplay = document.getElementById('avg-price');
+        const plDisplay = document.getElementById('p-l');
+        const messageDisplay = document.getElementById('message');
+        const quantityInput = document.getElementById('quantity-input');
+        const marketStatusMsg = document.getElementById('market-status-msg');
+
+        function updatePriceDisplay(newPrice) {
+            currentPrice = parseFloat(newPrice.toFixed(2));
+            priceDisplay.textContent = currentPrice.toFixed(2);
+            localStorage.setItem(PRICE_KEY, currentPrice);
+            updatePortfolio();
+        }
+
+        function updatePortfolio() {
+            balanceDisplay.textContent = balance.toFixed(2);
+            sharesDisplay.textContent = sharesHeld;
+            avgPriceDisplay.textContent = sharesHeld === 0 ? '0.00' : avgBuyPrice.toFixed(2);
+            if (sharesHeld > 0) {
+                const profitLoss = (currentPrice * sharesHeld) - (avgBuyPrice * sharesHeld);
+                plDisplay.textContent = `₹${profitLoss.toFixed(2)}`;
+                plDisplay.className = profitLoss >= 0 ? 'positive' : 'negative';
+            } else {
+                plDisplay.textContent = '₹0.00';
+                plDisplay.className = 'neutral';
+            }
+        }
+
+        function loadAndApplyPrice() {
+            const schedule = JSON.parse(localStorage.getItem(SCHEDULE_KEY));
+            const lock = JSON.parse(localStorage.getItem(MARKET_LOCK_KEY));
+            const storedPrice = parseFloat(localStorage.getItem(PRICE_KEY));
+
+            if (schedule && Date.now() >= schedule.time) {
+                updatePriceDisplay(schedule.targetPrice);
+                localStorage.removeItem(SCHEDULE_KEY);
+                marketStatusMsg.textContent = 'Price updates every 2 seconds.';
+                messageDisplay.textContent = '🚨 MARKET NEWS: Price changed due to scheduled event!';
+            } else if (lock && Date.now() < lock.time) {
+                if (storedPrice) updatePriceDisplay(storedPrice);
+                const remainingTime = Math.ceil((lock.time - Date.now()) / 1000);
+                marketStatusMsg.textContent = `🔒 Market Locked. Price Fixed for ${remainingTime}s.`;
+            } else if (schedule) {
+                if (storedPrice) updatePriceDisplay(storedPrice);
+                marketStatusMsg.textContent = `⚠️ Schedule active. Price fixed until event.`;
+            } else if (lock && Date.now() >= lock.time) {
+                localStorage.removeItem(MARKET_LOCK_KEY);
+                updatePriceRandomly();
+                marketStatusMsg.textContent = 'Price updates every 2 seconds.';
+            } else {
+                updatePriceRandomly();
+                marketStatusMsg.textContent = 'Price updates every 2 seconds.';
+            }
+
+            if (storedPrice && !isNaN(storedPrice)) {
+                currentPrice = storedPrice;
+                priceDisplay.textContent = currentPrice.toFixed(2);
+            }
+        }
+
+        function updatePriceRandomly() {
+            const change = (Math.random() - 0.5) * 2;
+            let newPrice = currentPrice + change;
+            if (newPrice < 5.0) newPrice = 5.00;
+            if (newPrice > 8.00) newPrice = 8.00;
+            updatePriceDisplay(newPrice);
+        }
+
+        document.getElementById('buy-btn').addEventListener('click', () => {
+            const amount = parseInt(quantityInput.value);
+            if (isNaN(amount) || amount <= 0) {
+                messageDisplay.textContent = '❌ Please enter a valid quantity to buy!';
+                return;
+            }
+            const cost = currentPrice * amount;
+            if (balance >= cost) {
+                const totalShares = sharesHeld + amount;
+                const totalCost = (avgBuyPrice * sharesHeld) + cost;
+                balance -= cost;
+                sharesHeld += amount;
+                avgBuyPrice = totalCost / totalShares;
+                messageDisplay.textContent = `✅ Bought ${amount} shares @ ₹${currentPrice.toFixed(2)}.`;
+            } else {
+                messageDisplay.textContent = `❌ Insufficient funds. Need ₹${cost.toFixed(2)}.`;
+            }
+            updatePortfolio();
+        });
+
+        document.getElementById('sell-btn').addEventListener('click', () => {
+            const amount = parseInt(quantityInput.value);
+            if (isNaN(amount) || amount <= 0) {
+                messageDisplay.textContent = '❌ Please enter a valid quantity to sell!';
+                return;
+            }
+            if (sharesHeld >= amount) {
+                const revenue = currentPrice * amount;
+                balance += revenue;
+                sharesHeld -= amount;
+                if (sharesHeld === 0) avgBuyPrice = 0;
+                messageDisplay.textContent = `✅ Sold ${amount} shares @ ₹${currentPrice.toFixed(2)}.`;
+            } else {
+                messageDisplay.textContent = `❌ Cannot sell ${amount} shares. You only hold ${sharesHeld}.`;
+            }
+            updatePortfolio();
+        });
+
+        function init() {
+            const storedPrice = localStorage.getItem(PRICE_KEY);
+            if (storedPrice) currentPrice = parseFloat(storedPrice);
+            updatePortfolio();
+            setInterval(loadAndApplyPrice, 2000);
+        }
+
+        init();
+    </script>
+</body>
+</html>
