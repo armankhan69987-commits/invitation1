@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smash Coin — Simulation Demo</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#f59e0b;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    *{box-sizing:border-box}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial; margin:0; background:linear-gradient(180deg,#071024 0%, #071a2a 100%); color:#e6eef8}
+    header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#ff6b6b);display:flex;align-items:center;justify-content:center;font-weight:700}
+    .container{max-width:1150px;margin:12px auto;padding:16px}
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:16px}
+    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 30px rgba(2,6,23,0.6);}
+    .ticker{display:flex;align-items:center;justify-content:space-between}
+    .price{font-size:28px;font-weight:700}
+    .change{font-weight:600;padding:6px 10px;border-radius:999px}
+    .green{background:rgba(34,197,94,0.12);color:#86efac}
+    .red{background:rgba(239,68,68,0.12);color:#ffb4b4}
+    #chart{width:100%;height:220px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:8px}
+    .controls{display:flex;gap:8px;margin-top:12px}
+    .btn{background:var(--accent);border:none;padding:10px 12px;border-radius:8px;color:#081224;font-weight:700;cursor:pointer}
+    .small{font-size:13px;padding:8px 10px}
+    .muted{color:var(--muted)}
+    .form-row{display:flex;gap:8px;margin-top:10px}
+    input,select{background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:inherit;padding:8px;border-radius:8px;outline:none}
+    .right-col{display:flex;flex-direction:column;gap:12px}
+    .list{max-height:280px;overflow:auto}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;text-align:left;font-size:13px}
+    th{color:var(--muted)}
+    .logo-text{font-weight:700}
+    footer{max-width:1150px;margin:12px auto;padding:8px;text-align:center;color:var(--muted)}
+    .auth-bar{display:flex;gap:8px;align-items:center}
+    .nav-link{color:var(--muted);font-size:14px}
+    .admin-toggle{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px 8px;border-radius:8px;color:var(--muted)}
+    .hidden{display:none}
+    @media (max-width:900px){.grid{grid-template-columns:1fr;}.right-col{order:2}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">SC</div>
+      <div>
+        <div class="logo-text">Smash Coin (Demo)</div>
+        <div class="muted" style="font-size:12px">Simulation trading — demo only</div>
+      </div>
+    </div>
+    <div class="auth-bar">
+      <div class="muted" id="user-label">Not signed in</div>
+      <button class="btn small" id="guest-btn">Guest</button>
+      <button class="btn small" id="login-btn">Login / Signup</button>
+      <button class="admin-toggle small" id="admin-btn">Admin</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <div class="ticker">
+            <div>
+              <div class="muted">Smash Coin (SMASH)</div>
+              <div class="price-row" style="display:flex;align-items:center;gap:12px">
+                <div class="price" id="price">₹0.00</div>
+                <div id="change" class="change green">+0.00%</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div class="muted">Base: <span id="base-price">₹100.00</span></div>
+              <div class="muted">Volatility: <span id="volatility-display">1%</span></div>
+            </div>
+          </div>
+
+          <canvas id="chart"></canvas>
+
+          <div class="controls">
+            <div style="flex:1">
+              <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn" id="buy-btn">Buy</button>
+                <button class="btn" id="sell-btn">Sell</button>
+                <select id="order-size">
+                  <option value="100">₹100</option>
+                  <option value="500">₹500</option>
+                  <option value="1000">₹1000</option>
+                  <option value="5000">₹5000</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <input id="qty-input" placeholder="Quantity (optional)" />
+                <input id="price-input" placeholder="Price override (optional)" />
+              </div>
+            </div>
+            <div style="width:220px">
+              <div class="card" style="padding:10px;background:transparent;border:1px solid rgba(255,255,255,0.03)">
+                <div class="muted">Wallet</div>
+                <div style="font-weight:800;font-size:18px" id="wallet-balance">₹0.00</div>
+                <div class="muted" style="font-size:13px">Holdings: <span id="holdings">0.00</span> SMASH</div>
+                <div class="muted" style="font-size:13px">Portfolio: <span id="portfolio-value">₹0.00</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700">Trade History</div>
+            <div class="muted">(latest 50)</div>
+          </div>
+          <div class="list" id="history-list" style="margin-top:10px">
+            <table id="history-table"><thead><tr><th>Time</th><th>Side</th><th>Price</th><th>Qty</th><th>Value</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="card">
+          <div style="font-weight:700">User Actions</div>
+          <div style="margin-top:10px">
+            <button class="btn small" id="deposit-1000">Deposit ₹1,000 (Demo)</button>
+            <button class="btn small" id="withdraw-1000">Withdraw ₹1,000 (Demo)</button>
+            <div style="margin-top:8px" class="muted">Quick transfer to test buy/sell flows.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:700">Portfolio Summary</div>
+          <table style="margin-top:8px"><tbody>
+            <tr><th>Cash</th><td id="ps-cash">₹0.00</td></tr>
+            <tr><th>Holdings</th><td id="ps-holdings">0 SMASH</td></tr>
+            <tr><th>Total Value</th><td id="ps-total">₹0.00</td></tr>
+          </tbody></table>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:700">Admin Panel</div>
+          <div style="margin-top:8px">
+            <div class="muted">(Enter admin pass: <strong>admin</strong>)</div>
+            <input id="admin-pass" placeholder="admin password" />
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <input id="base-input" placeholder="Base price" />
+              <input id="vol-input" placeholder="Volatility %" />
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn small" id="apply-params">Apply</button>
+              <button class="btn small" id="reset-market">Reset Market</button>
+            </div>
+            <div style="margin-top:10px" class="muted">Users in system:</div>
+            <div id="users-list" style="max-height:120px;overflow:auto;margin-top:6px"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <footer>Demo: Open this file locally in your browser. No server required. All data kept in browser localStorage.</footer>
+
+<script>
+// -------------------- Simple local demo backend (in-browser) --------------------
+const LS_PREFIX = 'smash_demo_v1';
+const DEFAULT_BASE = 100.00;
+const DEFAULT_VOL = 1.0; // percent per tick
+
+// --- Utilities
+const $ = id => document.getElementById(id);
+const fmt = v => '₹' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const nowStr = () => new Date().toLocaleString();
+
+// --- Persistence: users, sessions, market
+function save(key,obj){localStorage.setItem(LS_PREFIX+"_"+key,JSON.stringify(obj));}
+function load(key,def){const v=localStorage.getItem(LS_PREFIX+"_"+key);return v?JSON.parse(v):def}
+
+// Initialize market params
+let market = load('market',{base:DEFAULT_BASE,vol:DEFAULT_VOL,price:DEFAULT_BASE,history:[]});
+function persistMarket(){save('market',market)}
+
+// Initialize users store (object: email->user)
+let users = load('users',{});
+let session = load('session',null);
+
+// create guest user helper
+function makeGuest(){return {id:'guest_'+Math.random().toString(36).slice(2,8),name:'Guest',email:'guest@demo',cash:100000,holdings:0,history:[]}};
+
+// If no users exist, create demo account
+if(Object.keys(users).length===0){users['demo@demo']={id:'demo',name:'Demo User',email:'demo@demo',password:'demo',cash:100000,holdings:0,history:[]}; save('users',users);} 
+
+// --- Auth UI
+function updateAuthUI(){
+  const label=$('user-label');
+  if(session && session.user){
+    label.textContent = session.user.name + ' ('+session.user.email+')';
+  } else {
+    label.textContent = 'Not signed in';
+  }
+}
+updateAuthUI();
+
+// login/signup modal (simple prompt flows)
+$('login-btn').addEventListener('click',()=>{
+  const action = prompt('Type "signup" to create, "login" to sign in.');
+  if(!action) return;
+  if(action.toLowerCase()==='signup'){
+    const email=prompt('Email'); if(!email) return; const name=prompt('Display name')||email.split('@')[0];
+    const pass = prompt('Password'); if(!pass) return; if(users[email]){alert('User exists. Try login.');return}
+    users[email]={id:Math.random().toString(36).slice(2,9),name, email, password:pass, cash:100000, holdings:0, history:[]}; save('users',users);
+    session = {user:users[email]}; save('session',session);
+    updateAuthUI(); alert('Signed up & signed in.'); renderUsers(); renderPortfolio(); renderHistory();
+  } else if(action.toLowerCase()==='login'){
+    const email=prompt('Email'); if(!email) return; const pass=prompt('Password'); if(!pass) return;
+    const u = users[email]; if(!u||u.password!==pass){alert('Invalid credentials'); return}
+    session = {user:u}; save('session',session); updateAuthUI(); renderPortfolio(); renderHistory();
+  }
+});
+
+$('guest-btn').addEventListener('click',()=>{
+  const g = makeGuest(); session = {user:g,guest:true}; save('session',session); updateAuthUI(); renderPortfolio(); renderHistory(); alert('Guest mode active — data stored only in this browser session.');
+});
+
+// Deposit / withdraw quick buttons
+$('deposit-1000').addEventListener('click',()=>{
+  ensureSession(); session.user.cash += 1000; saveSessionUser(); renderPortfolio(); alert('Deposited ₹1,000 (Demo)')
+});
+$('withdraw-1000').addEventListener('click',()=>{
+  ensureSession(); if(session.user.cash<1000){alert('Insufficient cash');return} session.user.cash -= 1000; saveSessionUser(); renderPortfolio(); alert('Withdrew ₹1,000 (Demo)')
+});
+
+function ensureSession(){ if(!session){alert('Please login or use Guest.'); throw new Error('no session') }}
+function saveSessionUser(){ if(session.guest){ /* guest not saved to users store */ save('session',session); } else { users[session.user.email]=session.user; save('users',users); save('session',session);} }
+
+// --- Market simulation engine
+const TICK_MS = 1000; // 1 second per tick for demo
+function tickMarket(){
+  // random walk around current price
+  const vol = market.vol/100; // e.g., 0.01
+  const rnd = (Math.random()-0.5)*2; // -1..1
+  const changePct = rnd * vol; // e.g., +/-1% per tick
+  const newPrice = Math.max(0.01, market.price * (1 + changePct));
+  const pctChange = ((newPrice - market.price)/market.price)*100;
+  market.price = Number(newPrice.toFixed(6));
+  market.history.push({t:Date.now(),price:market.price});
+  if(market.history.length>600) market.history.shift();
+  persistMarket();
+  onPriceUpdate(pctChange);
+}
+
+let marketTimer = setInterval(tickMarket,TICK_MS);
+
+function onPriceUpdate(pctChange){
+  $('price').textContent = fmt(market.price);
+  const changeEl=$('change'); changeEl.textContent = (pctChange>=0?'+':'')+pctChange.toFixed(2)+'%';
+  changeEl.className = 'change '+(pctChange>=0?'green':'red');
+  $('base-price').textContent = fmt(market.base);
+  $('volatility-display').textContent = (market.vol).toFixed(2)+'%';
+  renderPortfolio(); renderHistory(); drawChart();
+}
+
+// --- Simple canvas line chart
+const canvas = $('chart'); const ctx = canvas.getContext('2d');
+function resizeCanvas(){ canvas.width = canvas.clientWidth * devicePixelRatio; canvas.height = canvas.clientHeight * devicePixelRatio; ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); drawChart(); }
+window.addEventListener('resize',resizeCanvas); resizeCanvas();
+
+function drawChart(){
+  const w = canvas.clientWidth; const h = canvas.clientHeight; ctx.clearRect(0,0,w,h);
+  const hist = market.history.slice(-120); if(hist.length<2) return;
+  // find min/max
+  const prices = hist.map(p=>p.price); const min = Math.min(...prices); const max = Math.max(...prices);
+  // draw grid
+  ctx.fillStyle='rgba(255,255,255,0.03)'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
+  for(let i=0;i<4;i++){ const y = h*(i/4); ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+  // draw line
+  ctx.beginPath();
+  for(let i=0;i<hist.length;i++){
+    const x = (i/(hist.length-1))*w; const p = hist[i].price; const y = h - ((p-min)/(max-min))*h;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle='rgba(245,158,11,0.95)'; ctx.lineWidth=2; ctx.stroke();
+  // price labels
+  ctx.fillStyle='rgba(255,255,255,0.6)'; ctx.font='12px sans-serif'; ctx.fillText('High: '+fmt(max),8,14); ctx.fillText('Low: '+fmt(min),8,h-10);
+}
+
+// --- Order execution (market order)
+function executeMarketOrder(side,amountOrQty){
+  ensureSession();
+  // amountOrQty: if numeric >0 and small we treat as cash amount (₹). If user filled qty we use qty.
+  const user = session.user;
+  const priceOverride = parseFloat($('price-input').value) || null;
+  const qtyInput = parseFloat($('qty-input').value) || null;
+  let qty = 0; let cashValue = 0;
+  if(qtyInput && qtyInput>0){ qty = qtyInput; cashValue = qty * (priceOverride||market.price); }
+  else {
+    const amt = Number($('order-size').value) || Number(amountOrQty) || 100;
+    cashValue = amt; qty = cashValue / (priceOverride||market.price);
+  }
+  qty = Number(qty.toFixed(6)); cashValue = Number(cashValue.toFixed(2));
+  if(side==='buy'){
+    if(user.cash < cashValue){ alert('Insufficient cash.'); return }
+    user.cash = Number((user.cash - cashValue).toFixed(2));
+    user.holdings = Number((user.holdings + qty).toFixed(6));
+  } else {
+    if(user.holdings < qty){ alert('Insufficient holdings'); return }
+    user.holdings = Number((user.holdings - qty).toFixed(6));
+    user.cash = Number((user.cash + cashValue).toFixed(2));
+  }
+  const trade = {time:Date.now(),side,price: priceOverride||market.price,qty:qty,value:cashValue};
+  user.history = user.history || []; user.history.unshift(trade); if(user.history.length>500) user.history.pop();
+  saveSessionUser(); renderPortfolio(); renderHistory();
+  alert('Order executed: '+side.toUpperCase()+' ' + qty + ' SMASH @ '+fmt(trade.price));
+}
+
+$('buy-btn').addEventListener('click',()=>{ executeMarketOrder('buy'); });
+$('sell-btn').addEventListener('click',()=>{ executeMarketOrder('sell'); });
+
+// --- Render history & portfolio
+function renderHistory(){
+  const tbody = document.querySelector('#history-table tbody'); tbody.innerHTML = '';
+  if(!session || !session.user) return;
+  const hist = session.user.history || [];
+  for(let i=0;i<Math.min(50,hist.length);i++){
+    const h = hist[i]; const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${new Date(h.time).toLocaleString()}</td><td>${h.side}</td><td>${fmt(h.price)}</td><td>${h.qty}</td><td>${fmt(h.value)}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function renderPortfolio(){
+  if(!session || !session.user) return;
+  const u = session.user;
+  const holdingsValue = (u.holdings||0) * market.price;
+  const total = Number((u.cash + holdingsValue).toFixed(2));
+  $('wallet-balance').textContent = fmt(u.cash);
+  $('holdings').textContent = (u.holdings||0).toFixed(6);
+  $('portfolio-value').textContent = fmt(total);
+  $('ps-cash').textContent = fmt(u.cash);
+  $('ps-holdings').textContent = (u.holdings||0).toFixed(6)+' SMASH';
+  $('ps-total').textContent = fmt(total);
+}
+
+// --- Admin actions
+$('admin-btn').addEventListener('click',()=>{
+  const pass = prompt('Enter admin password'); if(!pass) return; if(pass!=='admin'){alert('Wrong password');return}
+  // show admin panel: scroll to it and focus
+  document.querySelector('#admin-pass').focus(); alert('Admin mode: You can change base/vol below.');
+});
+
+$('apply-params').addEventListener('click',()=>{
+  const pass = $('admin-pass').value; if(pass!=='admin'){alert('wrong admin pass'); return}
+  const base = parseFloat($('base-input').value); const vol = parseFloat($('vol-input').value);
+  if(!isNaN(base)) market.base = Number(base.toFixed(2));
+  if(!isNaN(vol)) market.vol = Number(vol.toFixed(2));
+  // also push price to base if resetting
+  market.price = market.base; market.history.push({t:Date.now(),price:market.price}); persistMarket(); onPriceUpdate(0);
+});
+$('reset-market').addEventListener('click',()=>{ const pass=$('admin-pass').value; if(pass!=='admin'){alert('wrong admin pass');return} market = {base:DEFAULT_BASE,vol:DEFAULT_VOL,price:DEFAULT_BASE,history:[]}; persistMarket(); onPriceUpdate(0); drawChart(); alert('Market reset');});
+
+function renderUsers(){ const el=$('users-list'); el.innerHTML=''; for(const k of Object.keys(users)){ const u=users[k]; const div=document.createElement('div'); div.style.padding='6px 8px'; div.style.borderBottom='1px dashed rgba(255,255,255,0.02)'; div.innerHTML=`<strong>${u.email}</strong><div class='muted' style='font-size:12px'>Cash: ${fmt(u.cash)} — Holdings: ${Number(u.holdings||0).toFixed(6)}</div>`; el.appendChild(div);} }
+renderUsers();
+
+// --- Load previous market at startup
+if(!market.history || market.history.length===0){ for(let i=0;i<80;i++){ market.history.push({t:Date.now()-((80-i)*1000), price: market.base*(1 + (Math.random()-0.5)*0.02)}); } persistMarket(); }
+onPriceUpdate(0);
+
+// autos-tick UI
+setInterval(()=>{ renderUsers(); },50000);
+
+// ensure session persistence
+window.addEventListener('load',()=>{ if(session && session.user) renderPortfolio(); renderHistory(); });
+
+</script>
+</body>
+</html>
